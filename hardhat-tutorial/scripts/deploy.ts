@@ -1,27 +1,24 @@
-// import { ethers } from "hardhat";
+import { ethers } from "hardhat";
 
-// async function main() {
+async function main() {
+    const [deployer] = await ethers.getSigners();
 
-//     const [deployer] = await ethers.getSigners();
+    console.log("Deploying contracts with the account:", deployer.address);
 
-//     console.log(
-//     "Deploying contracts with the account:",
-//     deployer.address
-//     );
+    const Token = await ethers.getContractFactory("MyToken");
+    const token = await Token.deploy();
+    await token.waitForDeployment();
 
-//     const StakingPool = await ethers.getContractFactory("StakingPool");
-//     const contract = await StakingPool.deploy();
+    console.log("Token deployed to:", await token.getAddress());
 
-//     console.log("Contract deployed at:", contract.address);
-
-//     const saySomething = await contract.speak();
+    const StakingPool = await ethers.getContractFactory("StakingPool");
+    const stakingPool = await StakingPool.deploy(await token.getAddress());
+    await stakingPool.waitForDeployment();
     
-//     console.log("saySomething value:", saySomething);
-// }
+    console.log("StakingPool deployed to:", await stakingPool.getAddress());
+}
 
-// main()
-//   .then(() => process.exit(0))
-//   .catch(error => {
-//     console.error(error);
-//     process.exit(1);
-//   });
+main().catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+});

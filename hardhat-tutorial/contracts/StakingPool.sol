@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.24;
+pragma solidity ^0.8.19;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
@@ -55,9 +55,8 @@ contract StakingPool {
         uint256 duration = block.timestamp - stakeData.startTime;
         if (duration < stakingDuration) return 0;
 
-        // Calculate the number of years
-        uint256 nam = duration / 365 days;
-        uint256 reward = (stakeData.amount * annualInterestRate * nam) / 100;
+        uint256 year = duration / 365 days;
+        uint256 reward = (stakeData.amount * annualInterestRate * year) / 100;
         return reward;
     }
 }
