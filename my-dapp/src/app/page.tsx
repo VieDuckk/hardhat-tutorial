@@ -3,10 +3,12 @@ import StakeForm from '../components/StakeForm';
 import UnstakeForm from '../components/UnstakeForm';
 import StakeInfo from '../components/StakeInfo';
 import AppBackground from "../components/AppBackground";
+import { WalletProvider } from '../context/ConnectContext';
 
 export default function Home() {
   return (
     <AppBackground>
+      <WalletProvider>
       <div className="flex items-center justify-center min-h-screen">
         <div className="container text-center flex flex-col items-center justify-center">
           <ConnectWallet />
@@ -15,6 +17,7 @@ export default function Home() {
           <StakeInfo />
         </div>
       </div>
+      </WalletProvider>
     </AppBackground>
   );
 }

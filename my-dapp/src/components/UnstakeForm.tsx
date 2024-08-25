@@ -13,16 +13,25 @@ const UnstakeButton: React.FC = () => {
     setMessage(null);
     try {
       const walletAddress = await getWalletAddress();
+      
       if (walletAddress) {
         await unstakeToken(walletAddress);
         setMessage({ type: 'success', text: 'Tokens unstaked successfully!' });
       } else {
         setMessage({ type: 'error', text: 'Wallet not connected. Please connect your wallet.' });
       }
-    } catch (error) {
-      setMessage({ type: 'error', text: 'Failed to unstake tokens. Please try again.' });
-    } finally {
-      setIsLoading(false);
+    } catch (error: unknown) {
+      if (typeof error === 'string') {
+        setMessage({ type: 'error', text: error });
+      } else if (error instanceof Error) {
+        if (error.message.includes('Stake duration not yet met')) {
+          setMessage({ type: 'error', text: 'Cannot unstake yet. The stake duration has not been met.' });
+        } else {
+          setMessage({ type: 'error', text: 'Failed to unstake tokens. Please try again.' });
+        }
+      } else {
+        setMessage({ type: 'error', text: 'An unknown error occurred.' });
+      }
     }
   };
 

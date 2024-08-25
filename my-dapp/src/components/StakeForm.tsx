@@ -14,6 +14,7 @@ const StakeForm: React.FC = () => {
     setMessage(null);
     try {
       const walletAddress = await getWalletAddress();
+      console.log(walletAddress)
       if (walletAddress) {
         await stakeToken(walletAddress, amount);
         setAmount('');

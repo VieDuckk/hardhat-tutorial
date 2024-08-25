@@ -1,19 +1,12 @@
 "use client"
-import { useState, useEffect } from 'react';
-import Button from './Button'; // Import the Button component
+import { useState } from 'react';
+import Button from './Button';
 import { connectWallet, getWalletAddress } from '../utils/web3';
+import { useWallet } from '../context/ConnectContext';
 
 const ConnectWallet: React.FC = () => {
-  const [walletAddress, setWalletAddress] = useState<string | null>(null);
+  const { walletAddress, setWalletAddress } = useWallet();
   const [isLoading, setIsLoading] = useState<boolean>(false);
-
-  useEffect(() => {
-    const fetchWalletAddress = async () => {
-      const address = await getWalletAddress();
-      setWalletAddress(address);
-    };
-    fetchWalletAddress();
-  }, []);
 
   const handleConnectWallet = async () => {
     setIsLoading(true);
@@ -36,10 +29,9 @@ const ConnectWallet: React.FC = () => {
     <Button
       onClick={handleConnectWallet}
       disabled={isLoading}
-      variant={walletAddress ? 'success' : 'primary'} 
-      loading={isLoading} 
-      text={walletAddress ? truncateAddress(walletAddress) : 'Connect Wallet'} 
-      
+      variant={walletAddress ? 'success' : 'primary'}
+      loading={isLoading}
+      text={walletAddress ? truncateAddress(walletAddress) : 'Connect Wallet'}
     />
   );
 };

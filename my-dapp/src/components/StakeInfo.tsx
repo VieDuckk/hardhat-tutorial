@@ -1,19 +1,21 @@
 "use client";
 import { useState, useEffect } from 'react';
 import { getStakeInfo } from '../utils/contract';
-import { getWalletAddress } from '../utils/web3';
-import { FaSpinner } from 'react-icons/fa'; // Spinner icon
+import { FaSpinner } from 'react-icons/fa';
 import type { StakeData } from '@/types/contract';
+import { useWallet } from '../context/ConnectContext';
 
 const StakeInfo: React.FC = () => {
+  const { walletAddress } = useWallet();
   const [stakeData, setStakeData] = useState<StakeData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchStakeInfo = async () => {
+      setLoading(true);
+      setError(null);
       try {
-        const walletAddress = await getWalletAddress();
         if (walletAddress) {
           const data = await getStakeInfo(walletAddress);
           setStakeData(data);
@@ -28,7 +30,7 @@ const StakeInfo: React.FC = () => {
     };
 
     fetchStakeInfo();
-  }, []);
+  }, [walletAddress]);
 
   if (loading) {
     return (
@@ -51,8 +53,9 @@ const StakeInfo: React.FC = () => {
       <div className="px-6 py-4">
         <h2 className="text-xl font-bold text-gray-800">Stake Information</h2>
         <div className="mt-4">
+          <p className="text-gray-600"><span className="font-semibold">Wallet Address:</span> {walletAddress}</p>
           <p className="text-gray-600"><span className="font-semibold">Staked Amount:</span> {stakeData?.amount}</p>
-          <p className="text-gray-600"><span className="font-semibold">Stake Start Time:</span>  {stakeData?.startTime 
+          <p className="text-gray-600"><span className="font-semibold">Stake Start Time:</span> {stakeData?.startTime 
               ? new Date(stakeData.startTime * 1000).toLocaleString() 
               : 'N/A'}</p>
           <p className="text-gray-600"><span className="font-semibold">Reward:</span> {stakeData?.reward}</p>
