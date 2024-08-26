@@ -1,42 +1,33 @@
-import { ethers } from 'ethers';
+import { ethers, providers } from 'ethers';
+import { useEthersSigner } from './signer'
+import { useEthersProvider } from './provider';
+import React, { useEffect } from 'react';
 
-let provider: ethers.providers.Web3Provider | null = null;
-let signer: ethers.providers.JsonRpcSigner | null = null;
 
-declare global {
-  interface Window {
-    ethereum?: any;
-  }
+
+export const useWalletAddress = (): string | null => {
+  const signer = useEthersSigner();
+  const [walletAddress, setWalletAddress] = React.useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchAddress = async () => {
+      if (signer) {
+        const address = await signer.getAddress();
+        setWalletAddress(address);
+      }
+    };
+    fetchAddress();
+  }, [signer]);
+
+  return walletAddress;
+};
+
+export function useProvider() {
+  const provider = useEthersProvider()
+  return provider
 }
 
-export const connectWallet = async (): Promise<void> => {
-  if (typeof window !== 'undefined' && typeof window.ethereum !== 'undefined') {
-    try {
-      provider = new ethers.providers.Web3Provider(window.ethereum);
-      signer = provider.getSigner();
-      await provider.send('eth_requestAccounts', []);
-    } catch (error) {
-      console.error('Error connecting wallet:', error);
-      provider = null;
-      signer = null;
-    }
-  } else {
-    provider = null;
-    signer = null;
-  }
-};
-
-export const getWalletAddress = async (): Promise<string | null> => {
-  if (signer) {
-    return await signer.getAddress();
-  }
-  return null;
-};
-
-export const getProvider = async (): Promise<ethers.providers.Web3Provider | null> => {
-  return provider;
-};
-
-export const getSigner = (): ethers.providers.JsonRpcSigner | null => {
-  return signer;
-};
+export function useSigner() {
+  const signer = useEthersSigner()
+  return signer
+}

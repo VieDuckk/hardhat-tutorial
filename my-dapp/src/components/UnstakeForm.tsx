@@ -2,20 +2,21 @@
 import { useState } from 'react';
 import Button from './Button'; // Adjust the path if needed
 import { unstakeToken } from '../utils/contract';
-import { getWalletAddress } from '../utils/web3';
+import { useSigner } from '../utils/web3';
+import { useWallet } from '../context/ConnectContext';
 
 const UnstakeButton: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const signer = useSigner();
+  const { walletAddress } = useWallet();
 
   const handleUnstake = async () => {
     setIsLoading(true);
     setMessage(null);
     try {
-      const walletAddress = await getWalletAddress();
-      
-      if (walletAddress) {
-        await unstakeToken(walletAddress);
+      if (signer && walletAddress) {
+        await unstakeToken(signer);
         setMessage({ type: 'success', text: 'Tokens unstaked successfully!' });
       } else {
         setMessage({ type: 'error', text: 'Wallet not connected. Please connect your wallet.' });
@@ -32,6 +33,8 @@ const UnstakeButton: React.FC = () => {
       } else {
         setMessage({ type: 'error', text: 'An unknown error occurred.' });
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -39,7 +42,7 @@ const UnstakeButton: React.FC = () => {
     <div className="flex flex-col items-center justify-center">
       <Button
         onClick={handleUnstake}
-        disabled={isLoading}
+        disabled={isLoading || !signer || !walletAddress}
         variant="danger"
         loading={isLoading}
         text={isLoading ? 'Unstaking...' : 'Unstake Tokens'}

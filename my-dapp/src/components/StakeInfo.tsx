@@ -4,9 +4,11 @@ import { getStakeInfo } from '../utils/contract';
 import { FaSpinner } from 'react-icons/fa';
 import type { StakeData } from '@/types/contract';
 import { useWallet } from '../context/ConnectContext';
+import { useProvider } from '../utils/web3';
 
 const StakeInfo: React.FC = () => {
   const { walletAddress } = useWallet();
+  const provider = useProvider();
   const [stakeData, setStakeData] = useState<StakeData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -16,13 +18,17 @@ const StakeInfo: React.FC = () => {
       setLoading(true);
       setError(null);
       try {
-        if (walletAddress) {
-          const data = await getStakeInfo(walletAddress);
+        console.log(walletAddress, provider)
+        if (walletAddress && provider) {
+        console.log(walletAddress, provider)
+
+          const data = await getStakeInfo(provider, walletAddress);
           setStakeData(data);
         } else {
-          setError('Wallet not connected. Please connect your wallet.');
+          setError('Wallet not connected or provider not available. Please connect your wallet.');
         }
       } catch (error) {
+        console.error('Error fetching stake info:', error);
         setError('Failed to fetch stake information.');
       } finally {
         setLoading(false);
@@ -30,7 +36,7 @@ const StakeInfo: React.FC = () => {
     };
 
     fetchStakeInfo();
-  }, [walletAddress]);
+  }, [walletAddress, provider]);
 
   if (loading) {
     return (

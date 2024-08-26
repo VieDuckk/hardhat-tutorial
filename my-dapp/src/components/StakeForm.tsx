@@ -1,39 +1,74 @@
-"use client"
-import { useState } from 'react';
-import { stakeToken } from '../utils/contract';
-import { getWalletAddress } from '../utils/web3';
+import { useState, useCallback, useEffect } from 'react';
+import { stakeToken, getStakeInfo } from '../utils/contract';
+import { useProvider, useSigner } from '../utils/web3';
 import Button from './Button'; 
+import { StakeData } from '../types/contract';
+import { ethers } from 'ethers';
 
 const StakeForm: React.FC = () => {
   const [amount, setAmount] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [walletAddress, setWalletAddress] = useState<string | null>(null);
+  const [stakeInfo, setStakeInfo] = useState<StakeData | null>(null);
+  const provider = useProvider();
+  const signer = useSigner();
 
-  const handleStake = async () => {
+  useEffect(() => {
+    const fetchWalletAddress = async () => {
+      if (signer) {
+        const address = await signer.getAddress();
+        console.log(address)
+        setWalletAddress(address);
+      }
+    };
+    fetchWalletAddress();
+  }, [signer]);
+
+  useEffect(() => {
+    const fetchStakeInfo = async () => {
+      if (walletAddress && provider) {
+        const info = await getStakeInfo(provider, walletAddress);
+        setStakeInfo(info);
+      }
+    };
+    fetchStakeInfo();
+  }, [walletAddress, provider]);
+
+  const handleStake = useCallback(async () => {
+    if (!signer) {
+      setMessage({ type: 'error', text: 'Wallet not connected. Please connect your wallet.' });
+      return;
+    }
+
     setIsLoading(true);
     setMessage(null);
     try {
-      const walletAddress = await getWalletAddress();
-      console.log(walletAddress)
-      if (walletAddress) {
-        await stakeToken(walletAddress, amount);
-        setAmount('');
-        setMessage({ type: 'success', text: 'Tokens staked successfully!' });
-      } else {
-        setMessage({ type: 'error', text: 'Wallet not connected. Please connect your wallet.' });
+      await stakeToken(signer, amount);
+      setAmount('');
+      setMessage({ type: 'success', text: 'Tokens staked successfully!' });
+      if (walletAddress && provider) {
+        const updatedInfo = await getStakeInfo(provider, walletAddress);
+        setStakeInfo(updatedInfo);
       }
     } catch (error) {
+      console.error('Staking error:', error);
       setMessage({ type: 'error', text: 'Failed to stake tokens. Please try again.' });
     } finally {
       setIsLoading(false);
-      // Clear message after 5 seconds
       setTimeout(() => setMessage(null), 5000);
     }
-  };
+  }, [amount, signer, walletAddress, provider]);
 
   return (
     <div className="max-w-md min-h-max mx-auto mt-8 p-6 bg-white rounded-lg shadow-md">
       <h2 className="text-2xl font-bold mb-4 text-gray-800">Stake Tokens</h2>
+      {stakeInfo && (
+        <div className="mb-4 text-sm text-gray-600">
+          <p>Currently Staked: {stakeInfo.amount} Tokens</p>
+          <p>Reward: {stakeInfo.reward} Tokens</p>
+        </div>
+      )}
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -69,7 +104,7 @@ const StakeForm: React.FC = () => {
 
         <Button
           onClick={handleStake}
-          disabled={isLoading || !amount || parseFloat(amount) <= 0}
+          disabled={isLoading || !amount || parseFloat(amount) <= 0 || !walletAddress}
           variant="primary"
           loading={isLoading}
           text="Stake Tokens"

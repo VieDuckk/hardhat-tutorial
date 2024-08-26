@@ -8,10 +8,6 @@ import Button from './Button';
 const ConnectWallet: React.FC = () => {
 const { address, isConnecting } = useAccount();
 
-const truncateAddress = (address: string) => {
-return `${address.slice(0, 6)}...${address.slice(-4)}`;
-};
-
 return (
 <ConnectButton.Custom>
   {({

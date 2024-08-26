@@ -1,6 +1,6 @@
 "use client"
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { getWalletAddress } from '../utils/web3';
+import { useWalletAddress } from '../utils/web3';
 
 interface WalletContextType {
   walletAddress: string | null;
@@ -14,14 +14,13 @@ const WalletContext = createContext<WalletContextType | undefined>(undefined);
 export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
   const [contract, setContract] = useState<any | null>(null);
+  
+  // Gọi hook trực tiếp trong useEffect
+  const address = useWalletAddress();
 
   useEffect(() => {
-    const fetchWalletAddress = async () => {
-      const address = await getWalletAddress();
-      setWalletAddress(address);
-    };
-    fetchWalletAddress();
-  }, []);
+    setWalletAddress(address);
+  }, [address]);
 
   return (
     <WalletContext.Provider value={{ walletAddress, setWalletAddress, contract, setContract }}>
