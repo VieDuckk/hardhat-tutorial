@@ -1,39 +1,90 @@
+/* eslint-disable @next/next/no-img-element */
 "use client"
-import { useState } from 'react';
+
+import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { useAccount } from 'wagmi';
 import Button from './Button';
-import { connectWallet, getWalletAddress } from '../utils/web3';
-import { useWallet } from '../context/ConnectContext';
 
 const ConnectWallet: React.FC = () => {
-  const { walletAddress, setWalletAddress } = useWallet();
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+const { address, isConnecting } = useAccount();
 
-  const handleConnectWallet = async () => {
-    setIsLoading(true);
-    try {
-      await connectWallet();
-      const address = await getWalletAddress();
-      setWalletAddress(address);
-    } catch (error) {
-      console.error('Failed to connect wallet:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+const truncateAddress = (address: string) => {
+return `${address.slice(0, 6)}...${address.slice(-4)}`;
+};
 
-  const truncateAddress = (address: string) => {
-    return `${address.slice(0, 6)}...${address.slice(-4)}`;
-  };
+return (
+<ConnectButton.Custom>
+  {({
+  account,
+  chain,
+  openAccountModal,
+  openChainModal,
+  openConnectModal,
+  authenticationStatus,
+  mounted,
+  }) => {
+  const ready = mounted && authenticationStatus !== 'loading';
+  const connected =
+  ready &&
+  account &&
+  chain &&
+  (!authenticationStatus ||
+  authenticationStatus === 'authenticated');
 
   return (
-    <Button
-      onClick={handleConnectWallet}
-      disabled={isLoading}
-      variant={walletAddress ? 'success' : 'primary'}
-      loading={isLoading}
-      text={walletAddress ? truncateAddress(walletAddress) : 'Connect Wallet'}
-    />
+  <div {...(!ready && { 'aria-hidden' : true, 'style' : { opacity: 0, pointerEvents: 'none' , userSelect: 'none' , },
+    })}>
+    {(() => {
+    if (!connected) {
+    return (
+    <Button onClick={openConnectModal} disabled={isConnecting} variant={isConnecting ? 'success' : 'primary' }
+      text={isConnecting ? 'Connecting...' : 'Connect Wallet' } />
+
+    );
+    }
+
+    if (chain.unsupported) {
+    return (
+    <button onClick={openChainModal} type="button">
+      Wrong network
+    </button>
+    );
+    }
+
+    return (
+    <div className='bg-green-500' style={{ display: 'flex', gap: 12 }}>
+      <button onClick={openChainModal} style={{ display: 'flex', alignItems: 'center' }} type="button">
+        {chain.hasIcon && (
+        <div style={{
+                          background: chain.iconBackground,
+                          width: 12,
+                          height: 12,
+                          borderRadius: 999,
+                          overflow: 'hidden',
+                          marginRight: 4,
+                        }}>
+          {chain.iconUrl && (
+          <img alt={chain.name ?? 'Chain icon' } src={chain.iconUrl} style={{ width: 12, height: 12 }} />
+          )}
+        </div>
+        )}
+        {chain.name}
+      </button>
+
+      <button onClick={openAccountModal} type="button" >
+        {account.displayName}
+        {account.displayBalance
+        ? ` (${account.displayBalance})`
+        : ''}
+      </button>
+    </div>
+    );
+    })()}
+  </div>
   );
+  }}
+</ConnectButton.Custom>
+);
 };
 
 export default ConnectWallet;

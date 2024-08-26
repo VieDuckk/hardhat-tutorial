@@ -5,12 +5,15 @@ import { getWalletAddress } from '../utils/web3';
 interface WalletContextType {
   walletAddress: string | null;
   setWalletAddress: React.Dispatch<React.SetStateAction<string | null>>;
+  contract: any | null;
+  setContract: React.Dispatch<React.SetStateAction<any | null>>;
 }
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
 
 export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
+  const [contract, setContract] = useState<any | null>(null);
 
   useEffect(() => {
     const fetchWalletAddress = async () => {
@@ -21,7 +24,7 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   }, []);
 
   return (
-    <WalletContext.Provider value={{ walletAddress, setWalletAddress }}>
+    <WalletContext.Provider value={{ walletAddress, setWalletAddress, contract, setContract }}>
       {children}
     </WalletContext.Provider>
   );
