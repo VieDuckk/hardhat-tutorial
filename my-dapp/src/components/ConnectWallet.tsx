@@ -48,7 +48,7 @@ return (
     }
 
     return (
-    <div className='bg-green-500' style={{ display: 'flex', gap: 12 }}>
+    <div className='bg-green-500 rounded-md' style={{ display: 'flex', gap: 12 }}>
       <button onClick={openChainModal} style={{ display: 'flex', alignItems: 'center' }} type="button">
         {chain.hasIcon && (
         <div style={{

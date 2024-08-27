@@ -10,6 +10,7 @@ const StakeInfo: React.FC = () => {
   const { walletAddress } = useWallet();
   const provider = useProvider();
   const [stakeData, setStakeData] = useState<StakeData | null>(null);
+  const [amount, setAmount] = useState<number | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -24,6 +25,8 @@ const StakeInfo: React.FC = () => {
 
           const data = await getStakeInfo(provider, walletAddress);
           setStakeData(data);
+          const numericAmount = data?.amount ? Number(data.amount) : null;
+          setAmount(numericAmount);
         } else {
           setError('Wallet not connected or provider not available. Please connect your wallet.');
         }
@@ -38,6 +41,12 @@ const StakeInfo: React.FC = () => {
     fetchStakeInfo();
   }, [walletAddress, provider]);
 
+   useEffect(() => {
+    const numericAmount = stakeData?.amount ? Number(stakeData.amount) : null;
+    if (numericAmount !== amount) {
+      setAmount(numericAmount);
+    }
+  }, [stakeData, amount]);
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
